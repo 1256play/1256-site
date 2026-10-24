@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1256</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="1256: Tek parmakla şekil değiştir, deliğe sığ, fabrikadan kaç. 1256. duvarın ardında seni bir şey bekliyor.">
+<meta property="og:title" content="1256">
+<meta property="og:description" content="1256. duvarın ardında seni bir şey bekliyor.">
+<meta property="og:image" content="https://1256game.com/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@100;200;300;600;800&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: the factory floor seen from the jelly. A huge thin "1256" behind a live demo,
+   then the factory map from wall 0 to 1256, then the last door. */
+:root{
+  --bg:#e9edf1; --surface:#f6f8fa; --ink:#1f2933; --muted:#5f7183; --line:rgba(31,41,51,.12);
+  --jelly:#ff5a36; --jelly-deep:#c23d1f; --gold:#f5b301; --wall:#1f2933; --night:#121721; --night-ink:#e9eef4;
+  --display:"Sora",ui-sans-serif,system-ui,sans-serif; --body:"Onest","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151a23; --surface:#1c2330; --ink:#e6ebf1; --muted:#8e9bab; --line:rgba(230,235,241,.12);
+  --jelly:#ff6b47; --jelly-deep:#ff9a7e; --gold:#f5c040; --wall:#dfe5ec; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151a23; --surface:#1c2330; --ink:#e6ebf1; --muted:#8e9bab; --line:rgba(230,235,241,.12);
+  --jelly:#ff6b47; --jelly-deep:#ff9a7e; --gold:#f5c040; --wall:#dfe5ec; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;margin:0;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:6px}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:600;letter-spacing:.08em}
+.brand img{width:34px;height:34px;border-radius:9px}
+.lang{display:flex;border:1.5px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.lang button{font:600 12px var(--body);letter-spacing:.06em;background:none;color:var(--muted);border:0;border-radius:999px;padding:6px 11px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* hero */
+.hero{position:relative;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:40px;align-items:center;padding-block:24px 72px;overflow:hidden}
+.ghost{position:absolute;left:-.04em;top:-0.08em;font-family:var(--display);font-weight:100;font-size:clamp(150px,30vw,380px);letter-spacing:.06em;line-height:1;color:var(--ink);opacity:.06;pointer-events:none;user-select:none;white-space:nowrap}
+.hero-copy{position:relative;display:flex;flex-direction:column;gap:22px;min-width:0}
+.counter{font-family:var(--mono);font-size:13px;color:var(--jelly-deep);display:flex;align-items:center;gap:10px}
+.counter b{display:inline-block;min-width:4.2ch;font-weight:500;font-variant-numeric:tabular-nums}
+.counter i{flex:0 1 160px;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.counter i u{display:block;height:100%;width:0;background:var(--jelly)}
+.hero h1{font-weight:200;font-size:clamp(34px,5.2vw,58px);line-height:1.08;letter-spacing:-.01em}
+.hero h1 strong{font-weight:600;color:var(--jelly)}
+.lede{font-size:18px;color:var(--muted);max-width:44ch;margin:0}
+.stores{display:flex;flex-wrap:wrap;gap:10px}
+.store{display:flex;align-items:center;gap:10px;padding:11px 18px 11px 14px;border-radius:14px;background:var(--ink);color:var(--bg);text-decoration:none;min-width:0}
+.store svg{width:22px;height:22px;flex:none}
+.store span{display:flex;flex-direction:column;line-height:1.15}
+.store small{font-size:11px;opacity:.75}
+.store strong{font-family:var(--display);font-weight:600;font-size:16px}
+.soon{font-size:13px;color:var(--muted);margin:-8px 0 0}
+
+/* the phone with the live demo */
+.phone{position:relative;justify-self:center;width:min(300px,78vw);aspect-ratio:9/16;max-width:100%;border-radius:38px;padding:10px;background:var(--wall);box-shadow:0 30px 60px -20px rgba(18,23,33,.45),0 0 0 1px var(--line)}
+.phone iframe{display:block;width:100%;height:100%;border:0;border-radius:29px;background:#e9edf1}
+.phone .tag{position:absolute;left:50%;bottom:-38px;transform:translateX(-50%);white-space:nowrap;font-size:13px;color:var(--muted)}
+.phone::after{content:"";position:absolute;inset:auto auto -14px -26px;width:84px;height:84px;border-radius:30%;background:var(--jelly);box-shadow:inset -8px -10px 0 rgba(0,0,0,.12);z-index:-1;transform:rotate(-8deg)}
+
+/* gestures */
+.band{padding-block:72px}
+.band h2{font-weight:300;font-size:clamp(28px,4vw,42px);line-height:1.15}
+.gest{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:36px}
+.g{background:var(--surface);border-radius:24px;padding:26px 22px 22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.g .stage{height:170px;display:flex;align-items:flex-end;justify-content:center;border-bottom:2px solid var(--line)}
+.g h3{font-weight:600;font-size:20px}
+.g p{margin:0;color:var(--muted);font-size:15px}
+.g .dims{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.jelly{position:relative;background:var(--jelly);border-radius:28% 28% 22% 22%;box-shadow:inset -7px -9px 0 rgba(0,0,0,.12)}
+.jelly::before,.jelly::after{content:"";position:absolute;top:30%;width:11px;height:13px;border-radius:50%;background:#fff;box-shadow:inset 3px 2px 0 3px #1f2933}
+.jelly::before{left:28%}.jelly::after{right:28%}
+.j-tall{width:64px;height:144px}.j-flat{width:144px;height:64px}.j-sq{width:96px;height:96px}
+.note{margin-top:22px;font-size:14px;color:var(--muted)}
+.note b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+@media (prefers-reduced-motion: no-preference){
+  .j-tall{animation:breathe 3.2s ease-in-out infinite}
+  .j-flat{animation:breathe 3.2s ease-in-out infinite reverse}
+  .j-sq{animation:wob 2.4s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.06,.94)}}
+  @keyframes wob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+}
+
+/* factory map */
+.map{margin-top:34px;display:flex;flex-direction:column;gap:22px}
+.rail{display:flex;height:22px;border-radius:11px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.rail span{display:block;height:100%}
+.scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:-14px}
+.secs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.sec{border-radius:18px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:8px;min-width:0;background:var(--sb);color:var(--sc)}
+.sec header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.sec h3{font-weight:600;font-size:17px}
+.sec .rng{font-family:var(--mono);font-size:12px;opacity:.75;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sec ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.sec li{font-size:12.5px;font-weight:500;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--sc) 12%,transparent)}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;font-size:15px;color:var(--muted)}
+.facts b{font-family:var(--display);font-weight:600;color:var(--ink)}
+
+/* the last door: one dark band in both themes */
+.door{background:var(--night);color:var(--night-ink);padding-block:84px;position:relative;overflow:hidden}
+.door .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:40px;align-items:center}
+.door h2{font-weight:200;font-size:clamp(30px,4.6vw,52px);line-height:1.1}
+.door p{color:rgba(233,238,244,.7);max-width:46ch;margin:16px 0 0}
+.portal{position:relative;width:180px;height:230px;border-radius:14px;border:4px solid #ffd166;box-shadow:0 0 28px rgba(255,209,102,.55),inset 0 0 36px rgba(255,209,102,.25);background:linear-gradient(180deg,#8fd3ff,#fff3d6 70%,#6fbf5a 70%)}
+.portal .jelly{position:absolute;left:50%;bottom:44px;width:70px;height:70px;transform:translateX(-50%)}
+.door .eyebrow{color:rgba(233,238,244,.55)}
+@media (prefers-reduced-motion: no-preference){
+  .portal{animation:glow 2.6s ease-in-out infinite}
+  @keyframes glow{0%,100%{box-shadow:0 0 22px rgba(255,209,102,.45),inset 0 0 30px rgba(255,209,102,.2)}50%{box-shadow:0 0 44px rgba(255,209,102,.75),inset 0 0 44px rgba(255,209,102,.35)}}
+  .portal .jelly{animation:hopin 2.6s ease-in-out infinite}
+  @keyframes hopin{0%,100%{transform:translate(-50%,0)}40%{transform:translate(-50%,-26px)}}
+}
+
+/* footer */
+footer{padding-block:48px 56px}
+.foot{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:28px}
+.foot h3{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.foot ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.foot a{text-decoration:none;border-bottom:1px solid var(--line)}
+.foot a:hover{border-color:var(--ink)}
+.mail{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mail code{font-family:var(--mono);font-size:15px;user-select:all}
+.mail button{font:600 12px var(--body);border:1.5px solid var(--line);background:none;color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.legal{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--muted)}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;gap:56px;padding-bottom:84px}
+  .gest{grid-template-columns:1fr}
+  .secs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .door .wrap{grid-template-columns:1fr}
+  .portal{justify-self:start}
+  .foot{grid-template-columns:1fr}
+}
+@media (max-width:520px){.secs{grid-template-columns:1fr}.g{display:grid;grid-template-columns:96px minmax(0,1fr);grid-template-rows:auto auto auto;column-gap:16px;row-gap:4px;padding:16px}.g .stage{grid-row:1/4;height:auto;border-bottom:0;align-items:center}.g .stage .jelly{transform:scale(.6)!important;animation:none}.g h3{font-size:18px}}
+</style>
+</head>
+<body>
+<header class="wrap top">
+  <a class="brand" href="#" aria-label="1256"><img src="icon-256.png" alt="" width="34" height="34">1256</a>
+  <div class="lang" role="group" aria-label="Dil / Language">
+    <button type="button" id="lang-tr" aria-pressed="true">TR</button>
+    <button type="button" id="lang-en" aria-pressed="false">EN</button>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <div class="ghost" aria-hidden="true">1256</div>
+    <div class="hero-copy">
+      <div class="counter" aria-hidden="true"><span data-en="WALL">DUVAR</span> <b id="cnt">0001</b><i><u id="bar"></u></i> 1256</div>
+      <h1 data-en-html="Something is waiting for you <strong>beyond wall 1256.</strong>"><strong>1256. duvarın</strong> ardında seni bir şey bekliyor.</h1>
+      <p class="lede" data-en="A jelly that didn't fit the factory's mold. Stretch, squash and slip through 1256 walls with one finger, then find out what's on the other side.">Fabrikanın kalıbına sığmayan bir jöle. Tek parmakla uza, basıl, deliğe sığ; 1256 duvarı geç ve öbür tarafta ne olduğunu gör.</p>
+      <div class="stores">
+        <a class="store" href="#" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.4-.9-2.4-3.9zM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg><span><small data-en="Coming soon to">Yakında</small><strong>App Store</strong></span></a>
+        <a class="store" href="#" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 2.8v18.4c0 .4.4.6.7.4l10.1-9.2c.2-.2.2-.6 0-.8L4.7 2.4c-.3-.2-.7 0-.7.4zm12.2 6.9-2.3 2.1 2.3 2.1 3.3-1.9c.6-.3.6-1.1 0-1.4zM6.2 1.6l8.4 7.7 1.6-1.4zm0 20.8 10-6.3-1.6-1.4z"/></svg><span><small data-en="Coming soon to">Yakında</small><strong>Google Play</strong></span></a>
+      </div>
+      <p class="soon" data-en="Free to play. Try it right here in your browser while we finish the launch.">Ücretsiz. Mağazalara gelene kadar yandaki demoyu tarayıcında oynayabilirsin.</p>
+    </div>
+    <div class="phone">
+      <iframe src="play.html" title="1256 demo" loading="lazy"></iframe>
+      <span class="tag" data-en="Live demo · drag to shape the jelly">Canlı demo · jöleyi parmağınla şekillendir</span>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <p class="eyebrow" data-en="How to play">Nasıl oynanır</p>
+      <h2 data-en="One finger. Three shapes. Every hole.">Tek parmak. Üç şekil. Her delik.</h2>
+      <div class="gest">
+        <article class="g"><div class="stage"><div class="jelly j-tall"></div></div><h3 data-en="Stretch">Uza</h3><p data-en="Drag up and the jelly grows tall for narrow, high holes.">Yukarı çek; jöle dar ve yüksek delikler için uzasın.</p><span class="dims">64 × 144 px</span></article>
+        <article class="g"><div class="stage"><div class="jelly j-flat"></div></div><h3 data-en="Squash">Basıl</h3><p data-en="Drag down and it spreads out flat for wide, low gaps.">Aşağı çek; geniş ve alçak boşluklar için yassılsın.</p><span class="dims">144 × 64 px</span></article>
+        <article class="g"><div class="stage"><div class="jelly j-sq"></div></div><h3 data-en="Fit">Sığ</h3><p data-en="Slide sideways, line up with the hole and pass. Perfect fits pay more.">Sağa sola kaydır, deliğe hizalan ve geç. Tam oturan geçiş daha çok kazandırır.</p><span class="dims">96 × 96 px</span></article>
+      </div>
+      <p class="note" data-en-html="The jelly's area never changes: always <b>9,216 px²</b>. Only its shape does.">Jölenin alanı hiç değişmez: hep <b>9.216 px²</b>. Değişen yalnızca şekli.</p>
+    </div>
+  </section>
+
+  <section class="band" style="padding-top:24px">
+    <div class="wrap">
+      <p class="eyebrow" data-en="The factory">Fabrika</p>
+      <h2 data-en="Nine sections, 1256 walls, something new every 50.">Dokuz bölüm, 1256 duvar, her 50 duvarda yeni bir şey.</h2>
+      <div class="map">
+        <div class="rail" id="rail" aria-hidden="true"></div>
+        <div class="scale" aria-hidden="true"><span>0</span><span>300</span><span>600</span><span>1000</span><span>1256</span></div>
+        <div class="secs" id="secs"></div>
+        <div class="facts">
+          <span><b>24</b> <span data-en="new mechanics">yeni mekanik</span></span>
+          <span><b>27</b> <span data-en="section stars">bölüm yıldızı</span></span>
+          <span><b>25</b> <span data-en="jellies to rescue">kurtarılacak jöle</span></span>
+          <span><b>10</b> <span data-en="languages">dil</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="door">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow" data-en="Wall 1256">1256. duvar</p>
+        <h2 data-en="The last door is up high. You'll have to jump.">Son kapı yukarıda. Zıplaman gerekecek.</h2>
+        <p data-en="Every checkpoint saves your run and rescues a jelly from the factory. Get past wall 1256 and the story that started on the filling line finally gets told.">Her kontrol noktası ilerlemeni kaydeder ve fabrikadan bir jöle kurtarır. 1256. duvarı geçtiğinde dolum hattında başlayan hikâye sonunda anlatılır.</p>
+      </div>
+      <div class="portal" aria-hidden="true"><div class="jelly"></div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="foot">
+    <div>
+      <h3 data-en="Contact">İletişim</h3>
+      <div class="mail"><code id="mail">info@1256game.com</code><button type="button" id="copy" data-en="Copy">Kopyala</button></div>
+      <p style="margin:12px 0 0;color:var(--muted);font-size:14px" data-en="Bugs, ideas, press: we read everything.">Hata, fikir, basın: hepsini okuyoruz.</p>
+    </div>
+    <div>
+      <h3 data-en="Game">Oyun</h3>
+      <ul>
+        <li><a href="destek.html" data-en="Support &amp; FAQ">Destek ve SSS</a></li>
+        <li><a href="gizlilik.html" id="privacy-link" data-en="Privacy policy">Gizlilik politikası</a></li>
+        <li><a href="play.html" target="_blank" rel="noopener" data-en="Play the demo">Demoyu oyna</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 data-en="Follow">Takip et</h3>
+      <ul>
+        <li>TikTok · @1256game</li>
+        <li>Instagram · @1256game</li>
+        <li>YouTube · @1256game</li>
+      </ul>
+    </div>
+  </div>
+  <div class="legal"><span>© 2026 Fuat Suiçer</span><span data-en="Made in Elazığ, Türkiye">Elazığ, Türkiye'de yapıldı</span></div>
+</footer>
+
+<script>
+(() => {
+  const SECS = [
+    { from: 0, to: 100, tr: 'Dolum Hattı', en: 'Filling Line', bg: '#e9edf1', c: '#1f2933', n: [['Altın delik', 'Golden hole']] },
+    { from: 100, to: 200, tr: 'Soğutma Odası', en: 'Cooling Room', bg: '#e6f0f7', c: '#1d3a5f', n: [['İki delik', 'Two holes'], ['Kemer delik', 'Arch hole']] },
+    { from: 200, to: 300, tr: 'Kesim Atölyesi', en: 'Cutting Shop', bg: '#efe9df', c: '#22385a', n: [['Nefes alan delik', 'Breathing hole'], ['Kayan delik', 'Sliding hole']] },
+    { from: 300, to: 450, tr: 'Kalite Kontrol', en: 'Quality Control', bg: '#e3f1ec', c: '#0f4c45', n: [['Desenler', 'Patterns'], ['Art arda duvarlar', 'Back-to-back walls'], ['Yer değiştiren delikler', 'Swapping holes']] },
+    { from: 450, to: 600, tr: 'Paketleme', en: 'Packaging', bg: '#f6e3d7', c: '#4a2545', n: [['Dönen delik', 'Turning hole'], ['Sis', 'Fog'], ['Daralan delik', 'Closing hole']] },
+    { from: 600, to: 800, tr: 'Depo', en: 'Warehouse', bg: '#ebe7e2', c: '#3d3530', n: [['Kayan ve nefes alan', 'Slide & breathe'], ['Yanıp sönen duvar', 'Blinking wall'], ['Rüzgâr', 'Wind'], ['Sahte delikler', 'Fake holes']] },
+    { from: 800, to: 1000, tr: 'Yükleme Rampası', en: 'Loading Dock', bg: '#f4ecd2', c: '#2b2b2b', n: [['Salınan delik', 'Swinging hole'], ['Pres', 'Press'], ['Ani duvar', 'Sudden wall'], ['Buzlu duvar', 'Frozen wall']] },
+    { from: 1000, to: 1200, tr: 'Gece Vardiyası', en: 'Night Shift', bg: '#151a23', c: '#e6ebf1', rail: '#5a6b85', n: [['Ayna', 'Mirror'], ['Kaos', 'Chaos'], ['Karanlık', 'Darkness'], ['Yürüyen bant', 'Conveyor belt']] },
+    { from: 1200, to: 1256, tr: 'Çıkış Kapısı', en: 'Exit Gate', bg: '#fbe9e4', c: '#5b2a3c', n: [['Son kalıp', 'Final mold'], ['Son kapı', 'The last door']] }
+  ];
+  let lang = 'tr';
+  try { lang = localStorage.getItem('lang') || ((navigator.language || '').toLowerCase().startsWith('tr') ? 'tr' : 'en'); } catch (_) { lang = (navigator.language || '').toLowerCase().startsWith('tr') ? 'tr' : 'en'; }
+
+  function renderMap() {
+    document.getElementById('rail').innerHTML = SECS.map(s => '<span style="flex:' + (s.to - s.from) + ';background:' + (s.rail || s.c) + '"></span>').join('');
+    document.getElementById('secs').innerHTML = SECS.map(s =>
+      '<article class="sec" style="--sb:' + s.bg + ';--sc:' + s.c + '"><header><h3>' + (lang === 'en' ? s.en : s.tr) + '</h3><span class="rng">' + s.from + '–' + s.to + '</span></header><ul>' +
+      s.n.map(x => '<li>' + (lang === 'en' ? x[1] : x[0]) + '</li>').join('') + '</ul></article>').join('');
+  }
+  function apply() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-en],[data-en-html]').forEach(el => {
+      if (el.dataset.tr === undefined) el.dataset.tr = el.innerHTML;
+      el.innerHTML = lang === 'en' ? (el.dataset.enHtml || el.dataset.en) : el.dataset.tr;
+    });
+    document.getElementById('lang-tr').setAttribute('aria-pressed', lang === 'tr');
+    document.getElementById('lang-en').setAttribute('aria-pressed', lang === 'en');
+    document.getElementById('privacy-link').href = lang === 'en' ? 'privacy.html' : 'gizlilik.html';
+    document.title = '1256';
+    renderMap();
+  }
+  ['tr', 'en'].forEach(l => document.getElementById('lang-' + l).addEventListener('click', () => { lang = l; try { localStorage.setItem('lang', l); } catch (_) {} apply(); }));
+  document.querySelectorAll('.store[aria-disabled]').forEach(a => a.addEventListener('click', e => e.preventDefault()));
+  document.getElementById('copy').addEventListener('click', () => {
+    const b = document.getElementById('copy'), done = () => { b.textContent = lang === 'en' ? 'Copied' : 'Kopyalandı'; setTimeout(apply, 1600); };
+    const sel = () => { const r = document.createRange(); r.selectNodeContents(document.getElementById('mail')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    if (navigator.clipboard) navigator.clipboard.writeText('info@1256game.com').then(done, sel); else sel();
+  });
+  // the wall counter in the hero climbs to 1256, as if you were playing
+  const cnt = document.getElementById('cnt'), bar = document.getElementById('bar');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) { cnt.textContent = '1256'; bar.style.width = '100%'; }
+  else { let t0 = null; const step = now => { t0 = t0 || now; const k = Math.min(1, (now - t0) / 2600), v = Math.max(1, Math.round(1256 * (1 - Math.pow(1 - k, 3)))); cnt.textContent = String(v).padStart(4, '0'); bar.style.width = (100 * v / 1256) + '%'; if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+  apply();
+})();
+</script>
+</body>
+</html>
