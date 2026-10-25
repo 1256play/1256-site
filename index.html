@@ -17,239 +17,301 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@100;200;300;600;800&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout: the factory floor seen from the jelly. A huge thin "1256" behind a live demo,
-   then the factory map from wall 0 to 1256, then the last door. */
+/* The page is a factory floor seen from the jelly: a wall counter climbs as you scroll,
+   the hero holds the live demo, then a hole you can fit yourself, the factory line, the last door. */
 :root{
   --bg:#e9edf1; --surface:#f6f8fa; --ink:#1f2933; --muted:#5f7183; --line:rgba(31,41,51,.12);
-  --jelly:#ff5a36; --jelly-deep:#c23d1f; --gold:#f5b301; --wall:#1f2933; --night:#121721; --night-ink:#e9eef4;
+  --jelly:#ff5a36; --jelly-deep:#c23d1f; --gold:#f5b301; --ok:#16a37f; --wall:#1f2933; --night:#121721; --night-ink:#e9eef4;
   --display:"Sora",ui-sans-serif,system-ui,sans-serif; --body:"Onest","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#151a23; --surface:#1c2330; --ink:#e6ebf1; --muted:#8e9bab; --line:rgba(230,235,241,.12);
-  --jelly:#ff6b47; --jelly-deep:#ff9a7e; --gold:#f5c040; --wall:#dfe5ec; color-scheme:dark}}
+  --jelly:#ff6b47; --jelly-deep:#ff9a7e; --gold:#f5c040; --ok:#2fc79a; --wall:#dfe5ec; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#151a23; --surface:#1c2330; --ink:#e6ebf1; --muted:#8e9bab; --line:rgba(230,235,241,.12);
-  --jelly:#ff6b47; --jelly-deep:#ff9a7e; --gold:#f5c040; --wall:#dfe5ec; color-scheme:dark}
+  --jelly:#ff6b47; --jelly-deep:#ff9a7e; --gold:#f5c040; --ok:#2fc79a; --wall:#dfe5ec; color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;margin:0;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth;overflow-x:clip}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;margin:0;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit}
 .wrap{max-width:1120px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
 :focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:6px}
 
-/* top bar */
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px}
+/* top bar: the wall counter follows your scroll */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:600;letter-spacing:.08em}
-.brand img{width:34px;height:34px;border-radius:9px}
+.brand img{width:32px;height:32px;border-radius:9px}
+.right{display:flex;align-items:center;gap:14px}
+.wallno{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.wallno b{color:var(--jelly-deep);font-weight:500}
 .lang{display:flex;border:1.5px solid var(--line);border-radius:999px;padding:3px;gap:2px}
 .lang button{font:600 12px var(--body);letter-spacing:.06em;background:none;color:var(--muted);border:0;border-radius:999px;padding:6px 11px;cursor:pointer}
 .lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.prog{position:absolute;left:0;bottom:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--jelly)}
 
 /* hero */
-.hero{position:relative;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:40px;align-items:center;padding-block:24px 72px;overflow:hidden}
-.ghost{position:absolute;left:-.04em;top:-0.08em;font-family:var(--display);font-weight:100;font-size:clamp(150px,30vw,380px);letter-spacing:.06em;line-height:1;color:var(--ink);opacity:.06;pointer-events:none;user-select:none;white-space:nowrap}
+.hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:40px;align-items:center;padding-block:28px 96px}
+.ghost{position:absolute;left:-.04em;top:-0.04em;font-family:var(--display);font-weight:100;font-size:clamp(150px,30vw,380px);letter-spacing:.06em;line-height:1;color:var(--ink);opacity:.055;pointer-events:none;user-select:none;white-space:nowrap}
+.floor{position:absolute;left:50%;bottom:0;width:140vw;height:46%;transform:translateX(-50%);pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),var(--line) calc(10% - 1px) 10%);
+  -webkit-mask:linear-gradient(transparent,#000 70%);mask:linear-gradient(transparent,#000 70%);transform:translateX(-50%) perspective(300px) rotateX(58deg);transform-origin:50% 100%}
 .hero-copy{position:relative;display:flex;flex-direction:column;gap:22px;min-width:0}
 .counter{font-family:var(--mono);font-size:13px;color:var(--jelly-deep);display:flex;align-items:center;gap:10px}
 .counter b{display:inline-block;min-width:4.2ch;font-weight:500;font-variant-numeric:tabular-nums}
 .counter i{flex:0 1 160px;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
 .counter i u{display:block;height:100%;width:0;background:var(--jelly)}
-.hero h1{font-weight:200;font-size:clamp(34px,5.2vw,58px);line-height:1.08;letter-spacing:-.01em}
+.hero h1{font-weight:200;font-size:clamp(36px,5.4vw,62px);line-height:1.06;letter-spacing:-.01em}
 .hero h1 strong{font-weight:600;color:var(--jelly)}
 .lede{font-size:18px;color:var(--muted);max-width:44ch;margin:0}
+.cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:10px;font:600 16px var(--display);text-decoration:none;border-radius:16px;padding:14px 22px;border:0;cursor:pointer}
+.btn.main{background:var(--jelly);color:#fff;box-shadow:0 6px 0 var(--jelly-deep);transition:transform .12s,box-shadow .12s}
+.btn.main:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--jelly-deep)}
+.btn.main:active{transform:translateY(4px);box-shadow:0 2px 0 var(--jelly-deep)}
+.btn.ghostb{color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.ghostb:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
 .stores{display:flex;flex-wrap:wrap;gap:10px}
-.store{display:flex;align-items:center;gap:10px;padding:11px 18px 11px 14px;border-radius:14px;background:var(--ink);color:var(--bg);text-decoration:none;min-width:0}
-.store svg{width:22px;height:22px;flex:none}
+.store{display:flex;align-items:center;gap:10px;padding:9px 16px 9px 12px;border-radius:13px;background:var(--ink);color:var(--bg);text-decoration:none;min-width:0;opacity:.92}
+.store svg{width:20px;height:20px;flex:none}
 .store span{display:flex;flex-direction:column;line-height:1.15}
-.store small{font-size:11px;opacity:.75}
-.store strong{font-family:var(--display);font-weight:600;font-size:16px}
-.soon{font-size:13px;color:var(--muted);margin:-8px 0 0}
+.store small{font-size:10.5px;opacity:.75}
+.store strong{font-family:var(--display);font-weight:600;font-size:15px}
 
-/* the phone with the live demo */
-.phone{position:relative;justify-self:center;width:min(300px,78vw);aspect-ratio:9/16;max-width:100%;border-radius:38px;padding:10px;background:var(--wall);box-shadow:0 30px 60px -20px rgba(18,23,33,.45),0 0 0 1px var(--line)}
+/* the phone with the live demo, passing through a hole in a wall */
+.stagephone{position:relative;justify-self:center;width:min(300px,78vw)}
+.phone{position:relative;width:100%;aspect-ratio:9/16;border-radius:38px;padding:10px;background:var(--wall);box-shadow:0 30px 60px -20px rgba(18,23,33,.45),0 0 0 1px var(--line);z-index:1}
 .phone iframe{display:block;width:100%;height:100%;border:0;border-radius:29px;background:#e9edf1}
-.phone .tag{position:absolute;left:50%;bottom:-38px;transform:translateX(-50%);white-space:nowrap;font-size:13px;color:var(--muted)}
-.phone::after{content:"";position:absolute;inset:auto auto -14px -26px;width:84px;height:84px;border-radius:30%;background:var(--jelly);box-shadow:inset -8px -10px 0 rgba(0,0,0,.12);z-index:-1;transform:rotate(-8deg)}
+.stagephone .tag{position:absolute;left:50%;bottom:-38px;transform:translateX(-50%);white-space:nowrap;font-size:13px;color:var(--muted)}
+.blob{position:absolute;left:-40px;bottom:64px;width:86px;height:86px;border-radius:28% 28% 22% 22%;background:var(--jelly);box-shadow:inset -8px -10px 0 rgba(0,0,0,.12);z-index:0;transform:rotate(-8deg)}
+.blob::before,.blob::after{content:"";position:absolute;top:32%;width:11px;height:13px;border-radius:50%;background:#fff;box-shadow:inset 3px 2px 0 3px #1f2933}
+.blob::before{left:26%}.blob::after{right:26%}
 
-/* gestures */
-.band{padding-block:72px}
-.band h2{font-weight:300;font-size:clamp(28px,4vw,42px);line-height:1.15}
-.gest{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:36px}
-.g{background:var(--surface);border-radius:24px;padding:26px 22px 22px;display:flex;flex-direction:column;gap:14px;min-width:0}
-.g .stage{height:170px;display:flex;align-items:flex-end;justify-content:center;border-bottom:2px solid var(--line)}
-.g h3{font-weight:600;font-size:20px}
-.g p{margin:0;color:var(--muted);font-size:15px}
-.g .dims{font-family:var(--mono);font-size:12px;color:var(--muted)}
-.jelly{position:relative;background:var(--jelly);border-radius:28% 28% 22% 22%;box-shadow:inset -7px -9px 0 rgba(0,0,0,.12)}
-.jelly::before,.jelly::after{content:"";position:absolute;top:30%;width:11px;height:13px;border-radius:50%;background:#fff;box-shadow:inset 3px 2px 0 3px #1f2933}
-.jelly::before{left:28%}.jelly::after{right:28%}
-.j-tall{width:64px;height:144px}.j-flat{width:144px;height:64px}.j-sq{width:96px;height:96px}
-.note{margin-top:22px;font-size:14px;color:var(--muted)}
-.note b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+/* sections */
+.band{padding-block:84px}
+.band h2{font-weight:300;font-size:clamp(28px,4vw,44px);line-height:1.12}
+.sub{color:var(--muted);max-width:52ch;margin:14px 0 0}
+
+/* fit-it-yourself */
+.fit{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:48px;align-items:center}
+.lab{position:relative;height:290px;border-radius:28px;background:var(--surface);overflow:hidden;touch-action:none;cursor:ns-resize;user-select:none;box-shadow:0 0 0 1px var(--line)}
+.lab .wall{position:absolute;left:50%;top:26px;transform:translateX(-50%);width:84%;height:200px;border-radius:14px;background:var(--wall);transition:transform .55s cubic-bezier(.3,1.3,.5,1),opacity .4s}
+.lab .hole{position:absolute;left:50%;bottom:0;transform:translateX(-50%);background:var(--surface);border-radius:10px 10px 0 0;transition:width .4s,height .4s,background .2s}
+.lab.ok .hole{background:color-mix(in srgb,var(--ok) 22%,var(--surface))}
+.lab.go .wall{transform:translateX(-50%) scale(1.9);opacity:0}
+.lab .gnd{position:absolute;left:0;right:0;top:226px;height:2px;background:var(--line)}
+.lab .j{position:absolute;left:50%;top:226px;transform:translate(-50%,-100%);background:var(--jelly);border-radius:30% 30% 20% 20%;box-shadow:inset -7px -9px 0 rgba(0,0,0,.12);transition:transform .2s}
+.lab .j::before,.lab .j::after{content:"";position:absolute;top:24%;width:10px;height:12px;border-radius:50%;background:#fff;box-shadow:inset 3px 2px 0 3px #1f2933}
+.lab .j::before{left:26%}.lab .j::after{right:26%}
+.lab .hud{position:absolute;left:18px;right:18px;bottom:16px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.lab .say{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(.6);font-family:var(--display);font-weight:800;font-size:46px;color:var(--ok);opacity:0;pointer-events:none;transition:transform .35s cubic-bezier(.2,1.6,.4,1),opacity .25s;white-space:nowrap}
+.lab.go .say{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.lab .hint{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-size:20px;line-height:1;transition:opacity .4s}
+.lab.touched .hint{opacity:0}
+.score{display:flex;gap:28px;margin-top:22px;font-size:15px;color:var(--muted)}
+.score b{font-family:var(--display);font-weight:600;color:var(--ink);font-size:22px;display:block;line-height:1.1}
+.range{width:100%;margin-top:14px;accent-color:var(--jelly)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (prefers-reduced-motion: no-preference){
-  .j-tall{animation:breathe 3.2s ease-in-out infinite}
-  .j-flat{animation:breathe 3.2s ease-in-out infinite reverse}
-  .j-sq{animation:wob 2.4s ease-in-out infinite}
-  @keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.06,.94)}}
-  @keyframes wob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .lab .hint{animation:nudge 1.6s ease-in-out infinite}
+  @keyframes nudge{0%,100%{transform:translateY(-50%)}50%{transform:translateY(calc(-50% - 10px))}}
 }
 
-/* factory map */
-.map{margin-top:34px;display:flex;flex-direction:column;gap:22px}
-.rail{display:flex;height:22px;border-radius:11px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+/* the factory line: one strip, swipe through the sections */
+.line{margin-top:34px}
+.rail{display:flex;height:14px;border-radius:7px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
 .rail span{display:block;height:100%}
-.scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:-14px}
-.secs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.sec{border-radius:18px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:8px;min-width:0;background:var(--sb);color:var(--sc)}
-.sec header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.sec h3{font-weight:600;font-size:17px}
-.sec .rng{font-family:var(--mono);font-size:12px;opacity:.75;white-space:nowrap;font-variant-numeric:tabular-nums}
+.secs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:18px 2px 10px;margin:0 -2px;scrollbar-width:thin}
+.sec{flex:0 0 min(240px,72vw);scroll-snap-align:start;border-radius:20px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;background:var(--sb);color:var(--sc)}
+.sec .rng{font-family:var(--mono);font-size:12px;opacity:.7;font-variant-numeric:tabular-nums}
+.sec h3{font-weight:600;font-size:19px}
 .sec ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 .sec li{font-size:12.5px;font-weight:500;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--sc) 12%,transparent)}
-.facts{display:flex;flex-wrap:wrap;gap:10px 28px;font-size:15px;color:var(--muted)}
-.facts b{font-family:var(--display);font-weight:600;color:var(--ink)}
+.facts{display:flex;flex-wrap:wrap;gap:10px 32px;margin-top:22px;font-size:15px;color:var(--muted)}
+.facts b{font-family:var(--display);font-weight:600;color:var(--ink);font-size:22px;margin-right:4px}
 
 /* the last door: one dark band in both themes */
-.door{background:var(--night);color:var(--night-ink);padding-block:84px;position:relative;overflow:hidden}
-.door .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:40px;align-items:center}
-.door h2{font-weight:200;font-size:clamp(30px,4.6vw,52px);line-height:1.1}
+.door{background:var(--night);color:var(--night-ink);padding-block:96px;position:relative;overflow:hidden}
+.door .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:48px;align-items:center}
+.door h2{font-weight:200;font-size:clamp(30px,4.6vw,54px);line-height:1.08}
 .door p{color:rgba(233,238,244,.7);max-width:46ch;margin:16px 0 0}
-.portal{position:relative;width:180px;height:230px;border-radius:14px;border:4px solid #ffd166;box-shadow:0 0 28px rgba(255,209,102,.55),inset 0 0 36px rgba(255,209,102,.25);background:linear-gradient(180deg,#8fd3ff,#fff3d6 70%,#6fbf5a 70%)}
-.portal .jelly{position:absolute;left:50%;bottom:44px;width:70px;height:70px;transform:translateX(-50%)}
 .door .eyebrow{color:rgba(233,238,244,.55)}
+.portal{position:relative;width:190px;height:240px;border-radius:14px;border:4px solid #ffd166;box-shadow:0 0 28px rgba(255,209,102,.55),inset 0 0 36px rgba(255,209,102,.25);background:linear-gradient(180deg,#8fd3ff,#fff3d6 70%,#6fbf5a 70%)}
+.portal .blob{left:50%;bottom:44px;width:70px;height:70px;transform:translateX(-50%);z-index:1}
+.stars{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(1.5px 1.5px at 12% 30%,#fff8,transparent),radial-gradient(1px 1px at 72% 18%,#fff6,transparent),radial-gradient(1.5px 1.5px at 86% 70%,#fff5,transparent),radial-gradient(1px 1px at 34% 80%,#fff5,transparent),radial-gradient(1px 1px at 55% 45%,#fff4,transparent)}
 @media (prefers-reduced-motion: no-preference){
   .portal{animation:glow 2.6s ease-in-out infinite}
-  @keyframes glow{0%,100%{box-shadow:0 0 22px rgba(255,209,102,.45),inset 0 0 30px rgba(255,209,102,.2)}50%{box-shadow:0 0 44px rgba(255,209,102,.75),inset 0 0 44px rgba(255,209,102,.35)}}
-  .portal .jelly{animation:hopin 2.6s ease-in-out infinite}
-  @keyframes hopin{0%,100%{transform:translate(-50%,0)}40%{transform:translate(-50%,-26px)}}
+  @keyframes glow{0%,100%{box-shadow:0 0 22px rgba(255,209,102,.45),inset 0 0 30px rgba(255,209,102,.2)}50%{box-shadow:0 0 48px rgba(255,209,102,.8),inset 0 0 46px rgba(255,209,102,.35)}}
+  .portal .blob{animation:hopin 2.6s ease-in-out infinite}
+  @keyframes hopin{0%,100%{transform:translate(-50%,0)}40%{transform:translate(-50%,-28px)}}
 }
+
+/* follow */
+.follow{text-align:center}
+.follow h2{max-width:20ch;margin-inline:auto}
+.socials{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:30px}
+.soc{display:flex;align-items:center;gap:10px;padding:12px 18px 12px 14px;border-radius:16px;background:var(--surface);text-decoration:none;box-shadow:0 0 0 1px var(--line);transition:transform .15s,box-shadow .15s}
+.soc:hover{transform:translateY(-3px);box-shadow:0 0 0 1.5px var(--ink)}
+.soc svg{width:22px;height:22px;flex:none}
+.soc span{display:flex;flex-direction:column;line-height:1.15;text-align:left}
+.soc small{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.soc strong{font-family:var(--display);font-weight:600;font-size:15px}
 
 /* footer */
-footer{padding-block:48px 56px}
-.foot{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:28px}
-.foot h3{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-.foot ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.foot a{text-decoration:none;border-bottom:1px solid var(--line)}
-.foot a:hover{border-color:var(--ink)}
+footer{padding-block:40px 48px;border-top:1px solid var(--line)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px 40px;align-items:center}
+.foot nav{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14px}
+.foot nav a{text-decoration:none;color:var(--muted)}
+.foot nav a:hover{color:var(--ink)}
 .mail{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.mail code{font-family:var(--mono);font-size:15px;user-select:all}
+.mail code{font-family:var(--mono);font-size:14px;user-select:all}
 .mail button{font:600 12px var(--body);border:1.5px solid var(--line);background:none;color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
-.legal{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--muted)}
+.legal{margin-top:26px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--muted)}
+
+/* reveal on scroll */
+@media (prefers-reduced-motion: no-preference){
+  .rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+  .rv.in{opacity:1;transform:none}
+}
 
 @media (max-width:860px){
-  .hero{grid-template-columns:1fr;gap:56px;padding-bottom:84px}
-  .gest{grid-template-columns:1fr}
-  .secs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wallno{display:none}
+  .hero{grid-template-columns:1fr;gap:56px;padding-bottom:96px}
+  .fit{grid-template-columns:1fr;gap:28px}
   .door .wrap{grid-template-columns:1fr}
   .portal{justify-self:start}
-  .foot{grid-template-columns:1fr}
 }
-@media (max-width:520px){.secs{grid-template-columns:1fr}.g{display:grid;grid-template-columns:96px minmax(0,1fr);grid-template-rows:auto auto auto;column-gap:16px;row-gap:4px;padding:16px}.g .stage{grid-row:1/4;height:auto;border-bottom:0;align-items:center}.g .stage .jelly{transform:scale(.6)!important;animation:none}.g h3{font-size:18px}}
+@media (max-width:520px){.band{padding-block:64px}.lab{height:290px}.btn{padding:13px 18px}}
 </style>
 </head>
 <body>
-<header class="wrap top">
-  <a class="brand" href="#" aria-label="1256"><img src="icon-256.png" alt="" width="34" height="34">1256</a>
-  <div class="lang" role="group" aria-label="Dil / Language">
-    <button type="button" id="lang-tr" aria-pressed="true">TR</button>
-    <button type="button" id="lang-en" aria-pressed="false">EN</button>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="1256"><img src="icon-256.png" alt="" width="32" height="32">1256</a>
+    <div class="right">
+      <span class="wallno" aria-hidden="true"><span data-en="WALL">DUVAR</span> <b id="wallno">0000</b> / 1256</span>
+      <div class="lang" role="group" aria-label="Dil / Language">
+        <button type="button" id="lang-tr" aria-pressed="true">TR</button>
+        <button type="button" id="lang-en" aria-pressed="false">EN</button>
+      </div>
+    </div>
   </div>
+  <i class="prog" id="prog"></i>
 </header>
 
 <main>
   <section class="wrap hero">
     <div class="ghost" aria-hidden="true">1256</div>
+    <div class="floor" aria-hidden="true"></div>
     <div class="hero-copy">
       <div class="counter" aria-hidden="true"><span data-en="WALL">DUVAR</span> <b id="cnt">0001</b><i><u id="bar"></u></i> 1256</div>
       <h1 data-en-html="Something is waiting for you <strong>beyond wall 1256.</strong>"><strong>1256. duvarın</strong> ardında seni bir şey bekliyor.</h1>
       <p class="lede" data-en="A jelly that didn't fit the factory's mold. Stretch, squash and slip through 1256 walls with one finger, then find out what's on the other side.">Fabrikanın kalıbına sığmayan bir jöle. Tek parmakla uza, basıl, deliğe sığ; 1256 duvarı geç ve öbür tarafta ne olduğunu gör.</p>
+      <div class="cta">
+        <a class="btn main" href="#demo" id="playcta"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15l12-7.5z"/></svg><span data-en="Play the demo">Demoyu oyna</span></a>
+        <a class="btn ghostb" href="#follow" data-en="Follow the launch">Lansmanı takip et</a>
+      </div>
       <div class="stores">
         <a class="store" href="#" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.4-.9-2.4-3.9zM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg><span><small data-en="Coming soon to">Yakında</small><strong>App Store</strong></span></a>
         <a class="store" href="#" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 2.8v18.4c0 .4.4.6.7.4l10.1-9.2c.2-.2.2-.6 0-.8L4.7 2.4c-.3-.2-.7 0-.7.4zm12.2 6.9-2.3 2.1 2.3 2.1 3.3-1.9c.6-.3.6-1.1 0-1.4zM6.2 1.6l8.4 7.7 1.6-1.4zm0 20.8 10-6.3-1.6-1.4z"/></svg><span><small data-en="Coming soon to">Yakında</small><strong>Google Play</strong></span></a>
       </div>
-      <p class="soon" data-en="Free to play. Try it right here in your browser while we finish the launch.">Ücretsiz. Mağazalara gelene kadar yandaki demoyu tarayıcında oynayabilirsin.</p>
     </div>
-    <div class="phone">
-      <iframe src="play.html" title="1256 demo" loading="lazy"></iframe>
-      <span class="tag" data-en="Live demo · drag to shape the jelly">Canlı demo · jöleyi parmağınla şekillendir</span>
+    <div class="stagephone" id="demo">
+      <div class="phone"><iframe id="demoframe" src="play.html" title="1256 demo" loading="lazy" allow="autoplay"></iframe></div>
+      <div class="blob" aria-hidden="true"></div>
+      <span class="tag" data-en="Live demo · 49 walls · 15 obstacles">Canlı demo · 49 duvar · 15 engel</span>
     </div>
   </section>
 
   <section class="band">
-    <div class="wrap">
-      <p class="eyebrow" data-en="How to play">Nasıl oynanır</p>
-      <h2 data-en="One finger. Three shapes. Every hole.">Tek parmak. Üç şekil. Her delik.</h2>
-      <div class="gest">
-        <article class="g"><div class="stage"><div class="jelly j-tall"></div></div><h3 data-en="Stretch">Uza</h3><p data-en="Drag up and the jelly grows tall for narrow, high holes.">Yukarı çek; jöle dar ve yüksek delikler için uzasın.</p><span class="dims">64 × 144 px</span></article>
-        <article class="g"><div class="stage"><div class="jelly j-flat"></div></div><h3 data-en="Squash">Basıl</h3><p data-en="Drag down and it spreads out flat for wide, low gaps.">Aşağı çek; geniş ve alçak boşluklar için yassılsın.</p><span class="dims">144 × 64 px</span></article>
-        <article class="g"><div class="stage"><div class="jelly j-sq"></div></div><h3 data-en="Fit">Sığ</h3><p data-en="Slide sideways, line up with the hole and pass. Perfect fits pay more.">Sağa sola kaydır, deliğe hizalan ve geç. Tam oturan geçiş daha çok kazandırır.</p><span class="dims">96 × 96 px</span></article>
+    <div class="wrap fit">
+      <div class="rv">
+        <p class="eyebrow" data-en="Try it here">Burada dene</p>
+        <h2 data-en="One finger. One jelly. Every hole.">Tek parmak. Tek jöle. Her delik.</h2>
+        <p class="sub" data-en-html="Drag up to stretch, drag down to squash. The jelly's area never changes: always <b>9,216 px²</b>. Only its shape does.">Yukarı sürükle uzasın, aşağı sürükle basılsın. Jölenin alanı hiç değişmez: hep <b>9.216 px²</b>. Değişen yalnızca şekli.</p>
+        <div class="score"><span><b id="fits">0</b><span data-en="holes passed">delik geçildi</span></span><span><b id="best">—</b><span data-en="best fit">en iyi uyum</span></span></div>
       </div>
-      <p class="note" data-en-html="The jelly's area never changes: always <b>9,216 px²</b>. Only its shape does.">Jölenin alanı hiç değişmez: hep <b>9.216 px²</b>. Değişen yalnızca şekli.</p>
+      <div class="rv">
+        <div class="lab" id="lab" aria-label="Mini oyun">
+          <div class="wall" id="lwall"><div class="hole" id="lhole"></div></div>
+          <div class="gnd"></div>
+          <div class="j" id="lj"></div>
+          <div class="say" id="lsay">Tam!</div>
+          <div class="hint" aria-hidden="true">▲<br>▼</div>
+          <div class="hud"><span id="ldim">96 × 96</span><span>9.216 px²</span></div>
+        </div>
+        <label class="vh" for="lrange" data-en="Jelly shape">Jöle şekli</label>
+        <input class="range" id="lrange" type="range" min="0" max="1000" value="500">
+      </div>
     </div>
   </section>
 
-  <section class="band" style="padding-top:24px">
+  <section class="band" style="padding-top:20px">
     <div class="wrap">
-      <p class="eyebrow" data-en="The factory">Fabrika</p>
-      <h2 data-en="Nine sections, 1256 walls, something new every 50.">Dokuz bölüm, 1256 duvar, her 50 duvarda yeni bir şey.</h2>
-      <div class="map">
+      <div class="rv">
+        <p class="eyebrow" data-en="The factory">Fabrika</p>
+        <h2 data-en="Nine sections. Something new every 50 walls.">Dokuz bölüm. Her 50 duvarda yeni bir şey.</h2>
+      </div>
+      <div class="line rv">
         <div class="rail" id="rail" aria-hidden="true"></div>
-        <div class="scale" aria-hidden="true"><span>0</span><span>300</span><span>600</span><span>1000</span><span>1256</span></div>
         <div class="secs" id="secs"></div>
         <div class="facts">
-          <span><b>24</b> <span data-en="new mechanics">yeni mekanik</span></span>
-          <span><b>27</b> <span data-en="section stars">bölüm yıldızı</span></span>
-          <span><b>25</b> <span data-en="jellies to rescue">kurtarılacak jöle</span></span>
-          <span><b>10</b> <span data-en="languages">dil</span></span>
+          <span><b>24</b><span data-en="obstacles and mechanics">engel ve mekanik</span></span>
+          <span><b>25</b><span data-en="jellies to rescue">kurtarılacak jöle</span></span>
+          <span><b>10</b><span data-en="languages">dil</span></span>
         </div>
       </div>
     </div>
   </section>
 
   <section class="door">
+    <div class="stars" aria-hidden="true"></div>
     <div class="wrap">
-      <div>
+      <div class="rv">
         <p class="eyebrow" data-en="Wall 1256">1256. duvar</p>
         <h2 data-en="The last door is up high. You'll have to jump.">Son kapı yukarıda. Zıplaman gerekecek.</h2>
         <p data-en="Every checkpoint saves your run and rescues a jelly from the factory. Get past wall 1256 and the story that started on the filling line finally gets told.">Her kontrol noktası ilerlemeni kaydeder ve fabrikadan bir jöle kurtarır. 1256. duvarı geçtiğinde dolum hattında başlayan hikâye sonunda anlatılır.</p>
       </div>
-      <div class="portal" aria-hidden="true"><div class="jelly"></div></div>
+      <div class="portal" aria-hidden="true"><div class="blob"></div></div>
+    </div>
+  </section>
+
+  <section class="band follow" id="follow">
+    <div class="wrap rv">
+      <p class="eyebrow" data-en="Launch">Lansman</p>
+      <h2 data-en="Be there when the factory opens.">Fabrika açıldığında orada ol.</h2>
+      <p class="sub" style="margin-inline:auto" data-en="Follow us for the launch day, new walls and the best fails.">Lansman günü, yeni duvarlar ve en komik çarpışmalar için takip et.</p>
+      <div class="socials">
+        <a class="soc" href="https://www.tiktok.com/@1256game" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.6 5.8A4.3 4.3 0 0 1 15.5 3h-3.2v12.4a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.6a5.8 5.8 0 1 0 5 5.8V9.1a7.4 7.4 0 0 0 4.3 1.4V7.3a4.3 4.3 0 0 1-3.2-1.5z"/></svg><span><strong>TikTok</strong><small>@1256game</small></span></a>
+        <a class="soc" href="https://www.instagram.com/1256play/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 7.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4zm0 7.7a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm6-7.9a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0zM16.9 2H7.1A5.1 5.1 0 0 0 2 7.1v9.8A5.1 5.1 0 0 0 7.1 22h9.8a5.1 5.1 0 0 0 5.1-5.1V7.1A5.1 5.1 0 0 0 16.9 2zm3.4 14.9a3.4 3.4 0 0 1-3.4 3.4H7.1a3.4 3.4 0 0 1-3.4-3.4V7.1a3.4 3.4 0 0 1 3.4-3.4h9.8a3.4 3.4 0 0 1 3.4 3.4z"/></svg><span><strong>Instagram</strong><small>@1256play</small></span></a>
+        <a class="soc" href="https://www.youtube.com/@1256game" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15V9l5.2 3z"/></svg><span><strong>YouTube</strong><small>@1256game</small></span></a>
+        <a class="soc" href="https://x.com/1256game" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.6z"/></svg><span><strong>X</strong><small>@1256game</small></span></a>
+      </div>
     </div>
   </section>
 </main>
 
-<footer class="wrap">
-  <div class="foot">
-    <div>
-      <h3 data-en="Contact">İletişim</h3>
+<footer>
+  <div class="wrap">
+    <div class="foot">
       <div class="mail"><code id="mail">info@1256game.com</code><button type="button" id="copy" data-en="Copy">Kopyala</button></div>
-      <p style="margin:12px 0 0;color:var(--muted);font-size:14px" data-en="Bugs, ideas, press: we read everything.">Hata, fikir, basın: hepsini okuyoruz.</p>
+      <nav>
+        <a href="destek.html" data-en="Support &amp; FAQ">Destek ve SSS</a>
+        <a href="gizlilik.html" id="privacy-link" data-en="Privacy policy">Gizlilik politikası</a>
+        <a href="play.html" target="_blank" rel="noopener" id="demolink" data-en="Demo in full screen">Demoyu tam ekran aç</a>
+      </nav>
     </div>
-    <div>
-      <h3 data-en="Game">Oyun</h3>
-      <ul>
-        <li><a href="destek.html" data-en="Support &amp; FAQ">Destek ve SSS</a></li>
-        <li><a href="gizlilik.html" id="privacy-link" data-en="Privacy policy">Gizlilik politikası</a></li>
-        <li><a href="play.html" target="_blank" rel="noopener" data-en="Play the demo">Demoyu oyna</a></li>
-      </ul>
-    </div>
-    <div>
-      <h3 data-en="Follow">Takip et</h3>
-      <ul>
-        <li>TikTok · @1256game</li>
-        <li>Instagram · @1256game</li>
-        <li>YouTube · @1256game</li>
-      </ul>
-    </div>
+    <div class="legal"><span>© 2026 fuatsuicer</span><span>Made in Turkey</span></div>
   </div>
-  <div class="legal"><span>© 2026 fuatsuicer</span><span>Made in Turkey</span></div>
 </footer>
 
 <script>
 (() => {
   const SECS = [
-    { from: 0, to: 100, tr: 'Dolum Hattı', en: 'Filling Line', bg: '#e9edf1', c: '#1f2933', n: [['Altın delik', 'Golden hole']] },
-    { from: 100, to: 200, tr: 'Soğutma Odası', en: 'Cooling Room', bg: '#e6f0f7', c: '#1d3a5f', n: [['İki delik', 'Two holes'], ['Kemer delik', 'Arch hole']] },
+    { from: 0, to: 100, tr: 'Dolum Hattı', en: 'Filling Line', bg: '#e9edf1', c: '#1f2933', n: [['İki delik', 'Two holes']] },
+    { from: 100, to: 200, tr: 'Soğutma Odası', en: 'Cooling Room', bg: '#e6f0f7', c: '#1d3a5f', n: [['Altın delik', 'Golden hole'], ['Kemer delik', 'Arch hole']] },
     { from: 200, to: 300, tr: 'Kesim Atölyesi', en: 'Cutting Shop', bg: '#efe9df', c: '#22385a', n: [['Nefes alan delik', 'Breathing hole'], ['Kayan delik', 'Sliding hole']] },
     { from: 300, to: 450, tr: 'Kalite Kontrol', en: 'Quality Control', bg: '#e3f1ec', c: '#0f4c45', n: [['Desenler', 'Patterns'], ['Art arda duvarlar', 'Back-to-back walls'], ['Yer değiştiren delikler', 'Swapping holes']] },
     { from: 450, to: 600, tr: 'Paketleme', en: 'Packaging', bg: '#f6e3d7', c: '#4a2545', n: [['Dönen delik', 'Turning hole'], ['Sis', 'Fog'], ['Daralan delik', 'Closing hole']] },
@@ -258,14 +320,22 @@ footer{padding-block:48px 56px}
     { from: 1000, to: 1200, tr: 'Gece Vardiyası', en: 'Night Shift', bg: '#151a23', c: '#e6ebf1', rail: '#5a6b85', n: [['Ayna', 'Mirror'], ['Kaos', 'Chaos'], ['Karanlık', 'Darkness'], ['Yürüyen bant', 'Conveyor belt']] },
     { from: 1200, to: 1256, tr: 'Çıkış Kapısı', en: 'Exit Gate', bg: '#fbe9e4', c: '#5b2a3c', n: [['Son kalıp', 'Final mold'], ['Son kapı', 'The last door']] }
   ];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let lang = 'tr';
   try { lang = localStorage.getItem('lang') || ((navigator.language || '').toLowerCase().startsWith('tr') ? 'tr' : 'en'); } catch (_) { lang = (navigator.language || '').toLowerCase().startsWith('tr') ? 'tr' : 'en'; }
+  const $ = id => document.getElementById(id);
 
   function renderMap() {
-    document.getElementById('rail').innerHTML = SECS.map(s => '<span style="flex:' + (s.to - s.from) + ';background:' + (s.rail || s.c) + '"></span>').join('');
-    document.getElementById('secs').innerHTML = SECS.map(s =>
-      '<article class="sec" style="--sb:' + s.bg + ';--sc:' + s.c + '"><header><h3>' + (lang === 'en' ? s.en : s.tr) + '</h3><span class="rng">' + s.from + '–' + s.to + '</span></header><ul>' +
+    $('rail').innerHTML = SECS.map(s => '<span style="flex:' + (s.to - s.from) + ';background:' + (s.rail || s.c) + '"></span>').join('');
+    $('secs').innerHTML = SECS.map(s =>
+      '<article class="sec" style="--sb:' + s.bg + ';--sc:' + s.c + '"><span class="rng">' + s.from + '–' + s.to + '</span><h3>' + (lang === 'en' ? s.en : s.tr) + '</h3><ul>' +
       s.n.map(x => '<li>' + (lang === 'en' ? x[1] : x[0]) + '</li>').join('') + '</ul></article>').join('');
+  }
+  // the demo speaks the page's language
+  function setDemo() {
+    const f = $('demoframe'), want = 'play.html?lang=' + lang;
+    if (f.getAttribute('src') !== want) f.setAttribute('src', want);
+    $('demolink').href = want;
   }
   function apply() {
     document.documentElement.lang = lang;
@@ -273,24 +343,72 @@ footer{padding-block:48px 56px}
       if (el.dataset.tr === undefined) el.dataset.tr = el.innerHTML;
       el.innerHTML = lang === 'en' ? (el.dataset.enHtml || el.dataset.en) : el.dataset.tr;
     });
-    document.getElementById('lang-tr').setAttribute('aria-pressed', lang === 'tr');
-    document.getElementById('lang-en').setAttribute('aria-pressed', lang === 'en');
-    document.getElementById('privacy-link').href = lang === 'en' ? 'privacy.html' : 'gizlilik.html';
-    document.title = '1256';
-    renderMap();
+    $('lang-tr').setAttribute('aria-pressed', lang === 'tr');
+    $('lang-en').setAttribute('aria-pressed', lang === 'en');
+    $('privacy-link').href = lang === 'en' ? 'privacy.html' : 'gizlilik.html';
+    $('lab').setAttribute('aria-label', lang === 'en' ? 'Mini game' : 'Mini oyun');
+    renderMap(); setDemo(); labText();
   }
-  ['tr', 'en'].forEach(l => document.getElementById('lang-' + l).addEventListener('click', () => { lang = l; try { localStorage.setItem('lang', l); } catch (_) {} apply(); }));
+  ['tr', 'en'].forEach(l => $('lang-' + l).addEventListener('click', () => { if (lang === l) return; lang = l; try { localStorage.setItem('lang', l); } catch (_) {} apply(); }));
   document.querySelectorAll('.store[aria-disabled]').forEach(a => a.addEventListener('click', e => e.preventDefault()));
-  document.getElementById('copy').addEventListener('click', () => {
-    const b = document.getElementById('copy'), done = () => { b.textContent = lang === 'en' ? 'Copied' : 'Kopyalandı'; setTimeout(apply, 1600); };
-    const sel = () => { const r = document.createRange(); r.selectNodeContents(document.getElementById('mail')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+  $('copy').addEventListener('click', () => {
+    const b = $('copy'), done = () => { b.textContent = lang === 'en' ? 'Copied' : 'Kopyalandı'; setTimeout(() => { b.textContent = lang === 'en' ? 'Copy' : 'Kopyala'; }, 1600); };
+    const sel = () => { const r = document.createRange(); r.selectNodeContents($('mail')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
     if (navigator.clipboard) navigator.clipboard.writeText('info@1256game.com').then(done, sel); else sel();
   });
-  // the wall counter in the hero climbs to 1256, as if you were playing
-  const cnt = document.getElementById('cnt'), bar = document.getElementById('bar');
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // hero counter climbs to 1256 once; the header counter follows the scroll
+  const cnt = $('cnt'), bar = $('bar');
   if (reduce) { cnt.textContent = '1256'; bar.style.width = '100%'; }
   else { let t0 = null; const step = now => { t0 = t0 || now; const k = Math.min(1, (now - t0) / 2600), v = Math.max(1, Math.round(1256 * (1 - Math.pow(1 - k, 3)))); cnt.textContent = String(v).padStart(4, '0'); bar.style.width = (100 * v / 1256) + '%'; if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+  const onScroll = () => {
+    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight), k = Math.min(1, Math.max(0, scrollY / max));
+    $('prog').style.transform = 'scaleX(' + k + ')'; $('wallno').textContent = String(Math.round(k * 1256)).padStart(4, '0');
+  };
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  // reveal on scroll
+  if ('IntersectionObserver' in window && !reduce) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .15 });
+    document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  } else document.querySelectorAll('.rv').forEach(el => el.classList.add('in'));
+
+  // the demo button scrolls to the phone; on small screens it opens the demo full screen
+  $('playcta').addEventListener('click', e => { if (innerWidth < 860) { e.preventDefault(); location.href = 'play.html?lang=' + lang; } });
+
+  // ---------- fit it yourself: same rules as the game (area 9,216 px², shape = height / width) ----------
+  const A = 9216, SMIN = 0.32, SMAX = 3.0, K = 0.86;
+  const HOLES = [2.5, 0.42, 1.0, 3.0, 0.36, 1.6, 0.62];
+  let s = 1, hi = 0, fits = 0, best = 0, busy = false;
+  const lab = $('lab'), J = $('lj'), H = $('lhole'), R = $('lrange');
+  const dims = v => ({ w: Math.sqrt(A / v), h: Math.sqrt(A * v) });
+  const toR = v => Math.round(1000 * Math.log(v / SMIN) / Math.log(SMAX / SMIN)), fromR = r => SMIN * Math.pow(SMAX / SMIN, r / 1000);
+  let hole = null;
+  function newHole() { const d = dims(HOLES[hi % HOLES.length]); hole = { w: d.w * 1.16 + 6, h: d.h * 1.16 + 6 }; H.style.width = hole.w * K + 'px'; H.style.height = hole.h * K + 'px'; }
+  function labText() { $('lsay').textContent = lang === 'en' ? 'Perfect!' : 'Tam!'; }
+  function render() {
+    const d = dims(s); J.style.width = d.w * K + 'px'; J.style.height = d.h * K + 'px';
+    $('ldim').textContent = Math.round(d.w) + ' × ' + Math.round(d.h);
+    const ok = d.w <= hole.w - 2 && d.h <= hole.h - 2; lab.classList.toggle('ok', ok);
+    if (ok && !busy) { busy = true; setTimeout(check, 420); }
+  }
+  function check() {
+    const d = dims(s);
+    if (!(d.w <= hole.w - 2 && d.h <= hole.h - 2)) { busy = false; return; }
+    const q = Math.min(1, Math.min(d.w / hole.w, d.h / hole.h) / Math.min(1, Math.sqrt(A / (hole.w * hole.h))));
+    const pct = Math.round(q * 100); fits++; best = Math.max(best, pct);
+    $('fits').textContent = fits; $('best').textContent = '%' + best;
+    $('lsay').textContent = pct >= 90 ? (lang === 'en' ? 'Perfect! ' : 'Tam! ') + '%' + pct : (lang === 'en' ? 'Through!' : 'Geçtin!');
+    lab.classList.add('go');
+    setTimeout(() => { lab.classList.remove('go', 'ok'); hi++; newHole(); busy = false; render(); }, 900);
+  }
+  let drag = null;
+  lab.addEventListener('pointerdown', e => { drag = { y: e.clientY, s }; lab.classList.add('touched'); try { lab.setPointerCapture(e.pointerId); } catch (_) {} });
+  lab.addEventListener('pointermove', e => { if (!drag) return; s = Math.min(SMAX, Math.max(SMIN, drag.s * Math.exp(-(e.clientY - drag.y) * 0.014))); R.value = toR(s); render(); });
+  const up = () => { drag = null; }; lab.addEventListener('pointerup', up); lab.addEventListener('pointercancel', up);
+  R.addEventListener('input', () => { s = fromR(+R.value); lab.classList.add('touched'); render(); });
+  newHole(); R.value = toR(s); render();
+
   apply();
 })();
 </script>
