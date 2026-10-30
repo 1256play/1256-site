@@ -1,2 +1,1 @@
-# AdMob yayinci kimligi hesap acilinca eklenecek / AdMob publisher ID will be added:
-# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+google.com, pub-4682312849621207, DIRECT, f08c47fec0942fa0
