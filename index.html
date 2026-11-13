@@ -300,6 +300,7 @@ footer{padding-block:40px 48px;border-top:1px solid var(--line)}
       <nav>
         <a href="destek.html" data-en="Support &amp; FAQ">Destek ve SSS</a>
         <a href="gizlilik.html" id="privacy-link" data-en="Privacy policy">Gizlilik politikası</a>
+        <a href="kosullar.html" id="terms-link" data-en="Terms of use">Kullanım koşulları</a>
         <a href="play.html" target="_blank" rel="noopener" id="demolink" data-en="Demo in full screen">Demoyu tam ekran aç</a>
       </nav>
     </div>
@@ -346,6 +347,7 @@ footer{padding-block:40px 48px;border-top:1px solid var(--line)}
     $('lang-tr').setAttribute('aria-pressed', lang === 'tr');
     $('lang-en').setAttribute('aria-pressed', lang === 'en');
     $('privacy-link').href = lang === 'en' ? 'privacy.html' : 'gizlilik.html';
+    $('terms-link').href = lang === 'en' ? 'terms.html' : 'kosullar.html';
     $('lab').setAttribute('aria-label', lang === 'en' ? 'Mini game' : 'Mini oyun');
     renderMap(); setDemo(); labText();
   }
